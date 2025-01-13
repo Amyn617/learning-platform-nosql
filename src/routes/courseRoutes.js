@@ -1,15 +1,59 @@
-// Question: Pourquoi séparer les routes dans différents fichiers ?
-// Réponse : 
-// Question : Comment organiser les routes de manière cohérente ?
-// Réponse: 
-
+// routes/courseRoutes.js
 const express = require('express');
-const router = express.Router();
+const courseRouter = express.Router();
 const courseController = require('../controllers/courseController');
+const { validateCourse, checkCourseExists } = require('../middlewares/courseValidation');
+const { requireAuth, isAdmin } = require('../middlewares/auth');
 
-// Routes pour les cours
-router.post('/', courseController.createCourse);
-router.get('/:id', courseController.getCourse);
-router.get('/stats', courseController.getCourseStats);
+/**
+ * Routes pour la gestion des cours
+ * Base URL: /api/courses
+ */
 
-module.exports = router;
+// Routes publiques
+router.get('/', courseController.listCourses);
+router.get('/featured', courseController.getFeaturedCourses);
+router.get('/:id', checkCourseExists, courseController.getCourseById);
+router.get('/:id/preview', checkCourseExists, courseController.getCoursePreview);
+
+// Routes protégées (nécessitent authentification)
+router.use(requireAuth);
+
+// Routes pour les instructeurs et administrateurs
+router.post('/', 
+  isAdmin,
+  validateCourse, 
+  courseController.createCourse
+);
+
+router.put('/:id',
+  isAdmin,
+  checkCourseExists,
+  validateCourse,
+  courseController.updateCourse
+);
+
+router.delete('/:id',
+  isAdmin,
+  checkCourseExists,
+  courseController.deleteCourse
+);
+
+// Routes pour les statistiques et rapports
+router.get('/stats/overview', isAdmin, courseController.getCourseStats);
+router.get('/stats/enrollment', isAdmin, courseController.getEnrollmentStats);
+
+// Gestion des sections de cours
+router.post('/:id/sections',
+  isAdmin,
+  checkCourseExists,
+  courseController.addSection
+);
+
+router.put('/:id/sections/:sectionId',
+  isAdmin,
+  checkCourseExists,
+  courseController.updateSection
+);
+
+module.exports = courseRouter;
