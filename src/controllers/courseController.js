@@ -1,13 +1,13 @@
-const { ObjectId } = require('mongodb');
-const db = require('../config/db');
-const mongoService = require('../services/mongoService');
-const redisService = require('../services/redisService');
+const { ObjectId } = require("mongodb");
+const db = require("../config/db");
+const mongoService = require("../services/mongoService");
+const redisService = require("../services/redisService");
 
 // Constantes pour les messages d'erreur
 const ERRORS = {
-  INVALID_INPUT: 'Données d\'entrée invalides',
-  NOT_FOUND: 'Cours non trouvé',
-  SERVER_ERROR: 'Erreur serveur interne'
+  INVALID_INPUT: "Données d'entrée invalides",
+  NOT_FOUND: "Cours non trouvé",
+  SERVER_ERROR: "Erreur serveur interne",
 };
 
 /**
@@ -23,22 +23,26 @@ async function createCourse(req, res) {
 
     // Validation des données d'entrée
     if (!title || !description || !duration) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: ERRORS.INVALID_INPUT,
-        details: 'Tous les champs sont requis' 
+        details: "Tous les champs sont requis",
       });
     }
 
     // Appel au service pour la création
-    const course = await mongoService.createCourse({ title, description, duration });
-    
+    const course = await mongoService.createCourse({
+      title,
+      description,
+      duration,
+    });
+
     // Invalider le cache
     await redisService.invalidateCourseCache();
 
     // Réponse avec le nouveau cours
     res.status(201).json(course);
   } catch (error) {
-    console.error('Erreur création cours:', error);
+    console.error("Erreur création cours:", error);
     res.status(500).json({ error: ERRORS.SERVER_ERROR });
   }
 }
@@ -53,9 +57,9 @@ async function getCourseById(req, res) {
 
     // Validation de l'ID
     if (!ObjectId.isValid(courseId)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: ERRORS.INVALID_INPUT,
-        details: 'ID de cours invalide' 
+        details: "ID de cours invalide",
       });
     }
 
@@ -65,7 +69,7 @@ async function getCourseById(req, res) {
     if (!course) {
       // Si pas en cache, récupération depuis MongoDB
       course = await mongoService.getCourseById(courseId);
-      
+
       if (!course) {
         return res.status(404).json({ error: ERRORS.NOT_FOUND });
       }
@@ -76,7 +80,7 @@ async function getCourseById(req, res) {
 
     res.json(course);
   } catch (error) {
-    console.error('Erreur récupération cours:', error);
+    console.error("Erreur récupération cours:", error);
     res.status(500).json({ error: ERRORS.SERVER_ERROR });
   }
 }
@@ -91,9 +95,9 @@ async function updateCourse(req, res) {
 
     // Validation
     if (!ObjectId.isValid(courseId)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: ERRORS.INVALID_INPUT,
-        details: 'ID de cours invalide' 
+        details: "ID de cours invalide",
       });
     }
 
@@ -109,7 +113,7 @@ async function updateCourse(req, res) {
 
     res.json(updatedCourse);
   } catch (error) {
-    console.error('Erreur mise à jour cours:', error);
+    console.error("Erreur mise à jour cours:", error);
     res.status(500).json({ error: ERRORS.SERVER_ERROR });
   }
 }
@@ -123,9 +127,9 @@ async function deleteCourse(req, res) {
 
     // Validation
     if (!ObjectId.isValid(courseId)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: ERRORS.INVALID_INPUT,
-        details: 'ID de cours invalide' 
+        details: "ID de cours invalide",
       });
     }
 
@@ -141,15 +145,29 @@ async function deleteCourse(req, res) {
 
     res.status(204).send();
   } catch (error) {
-    console.error('Erreur suppression cours:', error);
+    console.error("Erreur suppression cours:", error);
     res.status(500).json({ error: ERRORS.SERVER_ERROR });
   }
 }
 
 // Export des contrôleurs
 module.exports = {
-  createCourse,
-  getCourseById,
-  updateCourse,
-  deleteCourse
+  updateCourse: (req, res) => {
+    res.send("Course updated");
+  },
+  deleteCourse: (req, res) => {
+    res.send("Course deleted");
+  },
+  getCourseStats: (req, res) => {
+    res.send("Course stats");
+  },
+  getEnrollmentStats: (req, res) => {
+    res.send("Enrollment stats");
+  },
+  addSection: (req, res) => {
+    res.send("Section added");
+  },
+  updateSection: (req, res) => {
+    res.send("Section updated");
+  },
 };

@@ -2,7 +2,7 @@
   "name": "learning-platform-template",
   "version": "1.0.0",
   "description": "Projet NoSQL, ENSET Mohammedia",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "start": "nodemon ./src/app.js"
   },
@@ -11,13 +11,12 @@
     "Redis",
     "GLSID, II-BDCC, II-CCN"
   ],
-  "author": "Abdelaziz DAAIF",
+  "author": "Amine Arfaoui",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "mongodb": "^6.12.0",
     "redis": "^4.7.0"
-  },
-  "devDependencies": {}
+  }
 }

@@ -5,12 +5,57 @@ const config = require('./env');
 // Variables pour stocker les instances des clients
 let mongoClient, redisClient, db;
 
+// Configuration MongoDB
+const MONGO_URI = "mongodb+srv://amyn617:<db_password>@cluster0.1x0ug.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+
 // Configuration des tentatives de reconnexion
 const RETRY_ATTEMPTS = 3;
 const RETRY_DELAY = 5000; // 5 secondes
 
 // Fonction utilitaire pour attendre un délai
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Fonction de tentative avec retry
+async function withRetry(operation, attempts = RETRY_ATTEMPTS) {
+    let lastError;
+    
+    for (let i = 0; i < attempts; i++) {
+        try {
+            return await operation();
+        } catch (error) {
+            lastError = error;
+            console.error(`Tentative ${i + 1}/${attempts} échouée:`, error.message);
+            
+            if (i < attempts - 1) {
+                await wait(RETRY_DELAY);
+            }
+        }
+    }
+    throw lastError;
+}
+
+// Connexion à MongoDB avec gestion des erreurs et retries
+async function connectMongo() {
+    if (mongoClient) return db;
+
+    return withRetry(async () => {
+        mongoClient = new MongoClient(MONGO_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            serverSelectionTimeoutMS: 5000
+        });
+
+        await mongoClient.connect();
+        db = mongoClient.db(config.mongodb.dbName);
+        
+        // Vérification de la connexion
+        await db.command({ ping: 1 });
+        console.log('MongoDB connecté avec succès');
+        
+        return db;
+    });
+}
+
 
 // Fonction de tentative avec retry
 async function withRetry(operation, attempts = RETRY_ATTEMPTS) {
@@ -37,7 +82,7 @@ async function connectMongo() {
     if (mongoClient) return db;
 
     return withRetry(async () => {
-        mongoClient = new MongoClient(config.mongodb.url, {
+        mongoClient = new MongoClient(MONGO_URI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
             serverSelectionTimeoutMS: 5000
