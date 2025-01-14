@@ -1,8 +1,7 @@
-const express = require('express');
-const config = require('./config/env');
-const db = require('./config/db');
-const courseRoutes = require('./routes/courseRoutes');
-const studentRoutes = require('./routes/studentRoutes');
+const express = require("express");
+const config = require("./config/env");
+const db = require("./config/db");
+const courseRoutes = require("./routes/courseRoutes");
 
 const app = express();
 
@@ -14,24 +13,24 @@ function setupMiddlewares(app) {
 
 // Fonction pour configurer les routes
 function setupRoutes(app) {
-  app.use('/api/courses', courseRoutes);
-  app.use('/api/students', studentRoutes);
-  
+  app.use("/api/courses", courseRoutes);
+  app.use("/api/students", studentRoutes);
+
   // Middleware de gestion d'erreurs global
   app.use((err, req, res, next) => {
     console.error(err.stack);
-    res.status(500).json({ error: 'Une erreur est survenue' });
+    res.status(500).json({ error: "Une erreur est survenue" });
   });
 }
 
 // Fonction pour la fermeture propre des connexions
 async function gracefulShutdown() {
   try {
-    console.log('Arrêt du serveur...');
+    console.log("Arrêt du serveur...");
     await db.disconnect();
     process.exit(0);
   } catch (error) {
-    console.error('Erreur lors de l\'arrêt:', error);
+    console.error("Erreur lors de l'arrêt:", error);
     process.exit(1);
   }
 }
@@ -40,8 +39,8 @@ async function gracefulShutdown() {
 async function startServer() {
   try {
     // 1. Connexion à la base de données
-    await db.connect(config.database.url);
-    console.log('Connecté à la base de données');
+    await db.connectMongo();
+    console.log("Connecté à la base de données");
 
     // 2. Configuration des middlewares
     setupMiddlewares(app);
@@ -55,11 +54,10 @@ async function startServer() {
     });
 
     // Gestion des signaux d'arrêt
-    process.on('SIGTERM', gracefulShutdown);
-    process.on('SIGINT', gracefulShutdown);
-
+    process.on("SIGTERM", gracefulShutdown);
+    process.on("SIGINT", gracefulShutdown);
   } catch (error) {
-    console.error('Erreur au démarrage du serveur:', error);
+    console.error("Erreur au démarrage du serveur:", error);
     process.exit(1);
   }
 }

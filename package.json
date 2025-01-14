@@ -9,7 +9,7 @@
   "keywords": [
     "MongoDB",
     "Redis",
-    "GLSID, II-BDCC, II-CCN"
+    "GLSID"
   ],
   "author": "Amine Arfaoui",
   "license": "ISC",
@@ -17,6 +17,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "mongodb": "^6.12.0",
+    "mongosh": "^2.3.8",
     "redis": "^4.7.0"
   }
 }
